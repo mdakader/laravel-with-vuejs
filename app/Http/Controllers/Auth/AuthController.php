@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
@@ -174,4 +175,57 @@ class AuthController extends Controller
     {
         return response()->json($request->user());
     }
+
+    public function profile(Request $request)
+    {
+        return response()->json($request->user());
+    }
+
+
+    public function profileUpdate(Request $request)
+    {
+        try {
+            // Log the incoming request data
+            \Log::info('Profile update request received', $request->all());
+
+            // Validation
+            $validatedData = $request->validate([
+                'name' => 'required|string|min:2|max:255',
+                'email' => 'required|string|email|max:255|unique:users,email,' . $request->user()->id,
+                'username' => 'nullable|string|max:255|unique:users,username,' . $request->user()->id,
+                'phone' => 'nullable|string|max:20|unique:users,phone,' . $request->user()->id,
+                'address' => 'nullable|string|max:500',
+                'photo' => 'nullable|image|max:2048'
+            ]);
+
+            // Get the current user
+            $user = $request->user();
+
+            // Handle photo upload if present
+            if ($request->hasFile('photo')) {
+                if ($user->photo) {
+                    Storage::delete('public/' . $user->photo);
+                }
+                $path = $request->file('photo')->store('profile-photos', 'public');
+                $validatedData['photo'] = $path;
+            }
+
+            // Update user
+            $user->update($validatedData);
+
+            // Return response
+            return response()->json([
+                'message' => 'Profile updated successfully',
+                'user' => $user->fresh()
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Profile update error: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Profile update failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 }

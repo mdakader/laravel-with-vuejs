@@ -1,4 +1,3 @@
-// router.js
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
@@ -28,6 +27,17 @@ const routes = [
     {
         path: '/',
         redirect: '/dashboard'
+    },
+    {
+        path: '/profile',
+        component: () => import('../views/Profile.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/update-profile',
+        name: 'update-profile',
+        component: () => import('../views/ProfileUpdate.vue'),
+        meta: { requiresAuth: true }
     }
 ]
 

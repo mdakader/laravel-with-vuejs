@@ -12,8 +12,11 @@
                         <router-link class="nav-link" to="/login">Login</router-link>
                         <router-link class="nav-link" to="/register">Register</router-link>
                     </template>
-                    <!-- Show logout if authenticated -->
-                    <a v-else @click.prevent="handleLogout" class="nav-link" href="#">Logout</a>
+                    <!-- Show profile and logout links if authenticated -->
+                    <template v-else>
+                        <router-link class="nav-link" to="/profile">Profile</router-link>
+                        <a @click.prevent="handleLogout" class="nav-link" href="#">Logout</a>
+                    </template>
                 </div>
             </div>
         </nav>
