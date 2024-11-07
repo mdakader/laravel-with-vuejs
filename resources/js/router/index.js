@@ -38,6 +38,30 @@ const routes = [
         name: 'update-profile',
         component: () => import('../views/ProfileUpdate.vue'),
         meta: { requiresAuth: true }
+    },
+    {
+        path: '/posts',
+        name: 'posts',
+        component: () => import('../views/BlogPosts.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/blog/create',
+        name: 'create-post',
+        component: () => import('../views/CreateBlogPost.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/posts/:id/edit',
+        name: 'edit-post',
+        component: () => import('../views/EditBlogPost.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/posts/:id',
+        name: 'blog-post',
+        component: () => import('../views/BlogPost.vue'),
+        meta: { requiresAuth: true }
     }
 ]
 

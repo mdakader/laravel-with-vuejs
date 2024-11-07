@@ -10,7 +10,7 @@ import 'toastr/build/toastr.min.css'
 toastr.options = {
     closeButton: true,
     progressBar: true,
-    positionClass: 'toast-top-right',
+    positionClass: 'toast-bottom-right',
     preventDuplicates: true,
     timeOut: 3000,
     extendedTimeOut: 1000,
