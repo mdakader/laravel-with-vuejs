@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\CategoryController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -24,6 +25,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
 
-    // Routes  PostController
+    // Routes  Post
     Route::apiResource('posts', PostController::class);
+
+    // Routes  Category
+    Route::apiResource('categories', CategoryController::class);
+//    Route::post('/categories', [CategoryController::class, 'store']);
+//    Route::put('/categories/{category}', [CategoryController::class, 'update']);
+//    Route::delete('/categories/{category}', [CategoryController::class, 'destroy']);
+
 });

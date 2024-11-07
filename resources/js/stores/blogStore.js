@@ -30,7 +30,7 @@ export const useBlogStore = defineStore('blog', {
         async fetchPosts() {
             console.log('Fetching posts...');
             try {
-                const response = await axios.get('/api/posts', {
+                const response = await axios.get('/posts', {
                     headers: {
                         Authorization: `Bearer ${this.token}`,
                     },
@@ -45,7 +45,7 @@ export const useBlogStore = defineStore('blog', {
         // Fetch single post by ID
         async fetchPost(id) {
             try {
-                const response = await axios.get(`/api/posts/${id}`, {
+                const response = await axios.get(`/posts/${id}`, {
                     headers: {
                         Authorization: `Bearer ${this.token}`,
                     },
@@ -59,7 +59,7 @@ export const useBlogStore = defineStore('blog', {
         // Create new post
         async createPost(postData) {
             try {
-                const response = await axios.post('/api/posts', postData, {
+                const response = await axios.post('/posts', postData, {
                     headers: {
                         Authorization: `Bearer ${this.token}`,
                         'Content-Type': 'multipart/form-data',
@@ -75,8 +75,8 @@ export const useBlogStore = defineStore('blog', {
         // Update an existing post by ID
         async updatePost(id, postData) {
             try {
-                postData.append('_method', 'PUT'); // Add override for PUT
-                const response = await axios.post(`/api/posts/${id}`, postData, {
+                postData.append('_method', 'PUT');
+                const response = await axios.post(`/posts/${id}`, postData, {
                     headers: {
                         Authorization: `Bearer ${this.token}`,
                         'Content-Type': 'multipart/form-data',
@@ -100,7 +100,7 @@ export const useBlogStore = defineStore('blog', {
         // Delete post by ID
         async deletePost(id) {
             try {
-                await axios.delete(`/api/posts/${id}`, {
+                await axios.delete(`/posts/${id}`, {
                     headers: {
                         Authorization: `Bearer ${this.token}`,
                     },

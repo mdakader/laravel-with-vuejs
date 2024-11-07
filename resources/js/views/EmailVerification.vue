@@ -34,9 +34,9 @@ const verifyEmail = async () => {
         return;
     }
     try {
-        const response = await axios.post('/api/verify-email', { otp: otp.value });
+        const response = await axios.post('/verify-email', { otp: otp.value });
         if (response.status === 200) {
-            const userResponse = await axios.get('/api/user');
+            const userResponse = await axios.get('/user');
             auth.user = userResponse.data; // Directly update the user in the store
             router.push('/dashboard');
         } else {
@@ -50,7 +50,7 @@ const verifyEmail = async () => {
 
 const resendOTP = async () => {
     try {
-        await axios.post('/api/resend-otp')
+        await axios.post('/resend-otp')
         alert('OTP resent successfully')
     } catch (error) {
         console.error(error)

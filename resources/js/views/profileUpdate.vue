@@ -208,7 +208,7 @@ const updateProfile = async () => {
         }
 
         // Send the data to the backend
-        const response = await axios.post('/api/profile-update', profileData, {
+        const response = await axios.post('/profile-update', profileData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
                 'Accept': 'application/json',

@@ -62,6 +62,30 @@ const routes = [
         name: 'blog-post',
         component: () => import('../views/BlogPost.vue'),
         meta: { requiresAuth: true }
+    },
+    {
+        path: '/categories',
+        name: 'categories',
+        component: () => import('../views/Categories.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/categories/create',
+        name: 'create-category',
+        component: () => import('../views/CreateCategory.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/categories/:id/edit',
+        name: 'edit-category',
+        component: () => import('../views/EditCategory.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/categories/:id',
+        name: 'view-categories',
+        component: () => import('../views/Category.vue'),
+        meta: { requiresAuth: true }
     }
 ]
 

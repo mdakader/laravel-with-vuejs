@@ -15,6 +15,7 @@
                     <!-- Show profile and logout links if authenticated -->
                     <template v-else>
                         <router-link class="nav-link" to="/posts">Blog Posts</router-link>
+                        <router-link class="nav-link" to="/categories">Categories</router-link>
                         <router-link class="nav-link" to="/profile">Profile</router-link>
                         <a @click.prevent="handleLogout" class="nav-link" href="#">Logout</a>
                     </template>

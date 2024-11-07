@@ -17,7 +17,7 @@ export const useAuthStore = defineStore('auth', {
     actions: {
         async register(userData) {
             try {
-                const response = await axios.post('/api/register', userData)
+                const response = await axios.post('/register', userData)
                 this.user = response.data.user
                 this.token = response.data.token
                 localStorage.setItem('token', this.token)
@@ -29,7 +29,7 @@ export const useAuthStore = defineStore('auth', {
         },
         async login(credentials) {
             try {
-                const response = await axios.post('/api/login', credentials)
+                const response = await axios.post('/login', credentials)
                 this.user = response.data.user
                 this.token = response.data.token
                 localStorage.setItem('token', this.token)
@@ -49,7 +49,7 @@ export const useAuthStore = defineStore('auth', {
         },
         async logout() {
             try {
-                await axios.post('/api/logout')
+                await axios.post('/logout')
                 this.clearAuthData() // This will clear the token and user data
                 router.push('/login')
             } catch (error) {
@@ -60,7 +60,7 @@ export const useAuthStore = defineStore('auth', {
         async fetchUser() {
             try {
                 this.isLoading = true
-                const response = await axios.get('/api/user')
+                const response = await axios.get('/user')
                 this.user = response.data
             } catch (error) {
                 console.error('Fetch user error:', error) // Debug log
