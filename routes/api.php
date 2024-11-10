@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ProductController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -25,13 +26,28 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
 
-    // Routes  Post
-    Route::apiResource('posts', PostController::class);
 
     // Routes  Category
     Route::apiResource('categories', CategoryController::class);
-//    Route::post('/categories', [CategoryController::class, 'store']);
-//    Route::put('/categories/{category}', [CategoryController::class, 'update']);
-//    Route::delete('/categories/{category}', [CategoryController::class, 'destroy']);
+
+    // Routes  Post
+    Route::apiResource('posts', PostController::class);
+
+    // Products routes
+
+    // or if using getCategories method
+    Route::get('/categories/select', [ProductController::class,'getCategories']);
+
+    // Categories routes
+    Route::get('/get-categories', [ProductController::class, 'index']);
+
+//    Route::get('/products', [ProductController::class, 'index']);
+    Route::get('/get-categories', [ProductController::class, 'getCategories']);
+
+    // Get categories for select option
+    Route::get('categories/select', [ProductController::class, 'getCategories']);
+
+    // Product routes
+    Route::apiResource('products', ProductController::class);
 
 });

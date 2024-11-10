@@ -24,6 +24,11 @@ class User extends Authenticatable
         'photo'
     ];
 
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
+
     protected $hidden = [
         'password',
         'remember_token',

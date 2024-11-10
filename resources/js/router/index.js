@@ -30,62 +30,81 @@ const routes = [
     },
     {
         path: '/profile',
-        component: () => import('../views/Profile.vue'),
+        component: () => import('@/views/Profile.vue'),
         meta: { requiresAuth: true }
     },
     {
         path: '/update-profile',
         name: 'update-profile',
-        component: () => import('../views/ProfileUpdate.vue'),
+        component: () => import('@/views/ProfileUpdate.vue'),
         meta: { requiresAuth: true }
     },
     {
         path: '/posts',
         name: 'posts',
-        component: () => import('../views/BlogPosts.vue'),
+        component: () => import('@/views/BlogPosts.vue'),
         meta: { requiresAuth: true }
     },
     {
         path: '/blog/create',
         name: 'create-post',
-        component: () => import('../views/CreateBlogPost.vue'),
+        component: () => import('@/views/CreateBlogPost.vue'),
         meta: { requiresAuth: true }
     },
     {
         path: '/posts/:id/edit',
         name: 'edit-post',
-        component: () => import('../views/EditBlogPost.vue'),
+        component: () => import('@/views/EditBlogPost.vue'),
         meta: { requiresAuth: true }
     },
     {
         path: '/posts/:id',
         name: 'blog-post',
-        component: () => import('../views/BlogPost.vue'),
+        component: () => import('@/views/BlogPost.vue'),
         meta: { requiresAuth: true }
     },
     {
         path: '/categories',
         name: 'categories',
-        component: () => import('../views/Categories.vue'),
+        component: () => import('@/views/Categories.vue'),
         meta: { requiresAuth: true }
     },
     {
         path: '/categories/create',
         name: 'create-category',
-        component: () => import('../views/CreateCategory.vue'),
+        component: () => import('@/views/CreateCategory.vue'),
         meta: { requiresAuth: true }
     },
     {
         path: '/categories/:id/edit',
         name: 'edit-category',
-        component: () => import('../views/EditCategory.vue'),
+        component: () => import('@/views/EditCategory.vue'),
         meta: { requiresAuth: true }
     },
     {
         path: '/categories/:id',
         name: 'view-categories',
-        component: () => import('../views/Category.vue'),
+        component: () => import('@/views/Category.vue'),
         meta: { requiresAuth: true }
+    },
+    {
+        path: '/products',
+        name: 'products',
+        component: () => import('@/views/ProductList.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/products/create',
+        name: 'product-create',
+        component: () => import('@/views/ProductCreate.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/products/:id/edit',
+        name: 'product-edit',
+        component: () => import('@/views/ProductEdit.vue'),
+        meta: { requiresAuth: true },
+        props: true
     }
 ]
 
