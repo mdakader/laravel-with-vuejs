@@ -114,6 +114,7 @@ import { useProductStore } from '../stores/productStore';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
+
 const productStore = useProductStore();
 
 // Add errors ref
@@ -149,6 +150,7 @@ const handleImageChange = (event) => {
 
 // Handle form submission
 const handleSubmit = async () => {
+
     try {
         // Clear any previous errors
         errors.value = null;
@@ -164,7 +166,6 @@ const handleSubmit = async () => {
             stock: Number(form.value.stock),
             is_active: Boolean(form.value.is_active)
         };
-
         await productStore.createProduct(formData);
         router.push('/products');
     } catch (error) {

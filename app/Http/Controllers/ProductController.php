@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
 {
-    
+
     public function index(Request $request)
     {
         $query = Product::with(['category', 'user']);
@@ -165,5 +165,50 @@ class ProductController extends Controller
             'status' => 'success',
             'message' => 'Product deleted successfully'
         ]);
+    }
+
+    public function add(Request $request)
+    {
+        $request->validate([
+            'product_id' => 'required|exists:products,id'
+        ]);
+
+        $cart = Cart::updateOrCreate(
+            [
+                'user_id' => auth()->id(),
+                'product_id' => $request->product_id
+            ],
+            [
+                'quantity' => \DB::raw('quantity + 1')
+            ]
+        );
+
+        return response()->json(['message' => 'Product added to cart']);
+    }
+
+    public function getCount()
+    {
+        $count = Cart::where('user_id', auth()->id())->sum('quantity');
+        return response()->json(['count' => $count]);
+    }
+
+
+    public function transfer(Request $request)
+    {
+        $items = $request->items;
+
+        foreach ($items as $item) {
+            Cart::updateOrCreate(
+                [
+                    'user_id' => auth()->id(),
+                    'product_id' => $item['product_id']
+                ],
+                [
+                    'quantity' => DB::raw("quantity + {$item['quantity']}")
+                ]
+            );
+        }
+
+        return response()->json(['message' => 'Cart transferred successfully']);
     }
 }

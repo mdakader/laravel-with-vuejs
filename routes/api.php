@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\CartController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -13,6 +14,15 @@ Route::get('/user', function (Request $request) {
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+
+// Public routes for shop
+Route::get('/shop', [ProductController::class, 'index']);
+Route::get('/shop/categories', [ProductController::class, 'getCategories']);
+Route::get('/shop/product/{product:slug}', [ProductController::class, 'show']);
+
+// Guest cart routes
+Route::post('/cart/add', [CartController::class, 'add']);
+Route::get('/cart', [CartController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -41,4 +51,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // Product routes
     Route::apiResource('products', ProductController::class);
 
+    Route::get('/cart', [CartController::class, 'index']);
+    Route::post('/cart/update-quantity', [CartController::class, 'updateQuantity']);
+    Route::post('/cart/remove', [CartController::class, 'remove']);
+    Route::post('/cart/transfer', [CartController::class, 'transfer']);
+    Route::post('/cart/checkout', [CartController::class, 'checkout']);
+
 });
+

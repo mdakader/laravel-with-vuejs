@@ -1,4 +1,4 @@
-import {defineStore} from 'pinia'
+import { defineStore } from 'pinia'
 import axios from '../axios'
 import router from '../router'
 
@@ -18,9 +18,7 @@ export const useAuthStore = defineStore('auth', {
         async register(userData) {
             try {
                 const response = await axios.post('/register', userData)
-                this.user = response.data.user
-                this.token = response.data.token
-                localStorage.setItem('token', this.token)
+                this.setAuthData(response.data)
                 return response
             } catch (error) {
                 console.error('Registration error:', error.response?.data || error)
@@ -30,30 +28,42 @@ export const useAuthStore = defineStore('auth', {
         async login(credentials) {
             try {
                 const response = await axios.post('/login', credentials)
-                this.user = response.data.user
-                this.token = response.data.token
-                localStorage.setItem('token', this.token)
+                this.setAuthData(response.data)
 
-                // Redirect based on email verification status
-                if (!this.user.email_verified_at) {
-                    router.push('/verify-email')
-                } else {
-                    router.push('/dashboard')
+                const cartStore = useCartStore()
+                const guestCart = JSON.parse(localStorage.getItem('guestCart') || '[]')
+                console.log('Guest Cart:', guestCart) // Debugging line
+
+                if (guestCart.length > 0) {
+                    for (const item of guestCart) {
+                        console.log('Adding item:', item) // Debugging line
+                        await cartStore.addToCart({
+                            product_id: item.product_id,
+                            quantity: item.quantity
+                        })
+                    }
+                    localStorage.removeItem('guestCart')
                 }
+
+                const redirect = localStorage.getItem('redirectAfterLogin') || '/dashboard'
+                localStorage.removeItem('redirectAfterLogin')
+                router.push(redirect)
 
                 return response
             } catch (error) {
-                console.error('Login error:', error)
+                console.error('Login error:', error.response?.data || error)
                 throw error
             }
         },
+
         async logout() {
             try {
                 await axios.post('/logout')
-                this.clearAuthData() // This will clear the token and user data
+                this.clearAuthData()
                 router.push('/login')
             } catch (error) {
-                this.clearAuthData() // Also call it here in case of an error
+                console.warn('Logout error:', error.response?.data || error)
+                this.clearAuthData()
                 router.push('/login')
             }
         },
@@ -63,7 +73,7 @@ export const useAuthStore = defineStore('auth', {
                 const response = await axios.get('/user')
                 this.user = response.data
             } catch (error) {
-                console.error('Fetch user error:', error) // Debug log
+                console.error('Fetch user error:', error.response?.data || error)
                 this.clearAuthData()
                 router.push('/login')
             } finally {
@@ -74,14 +84,21 @@ export const useAuthStore = defineStore('auth', {
             this.user = null
             this.token = null
             localStorage.removeItem('token')
+            delete axios.defaults.headers.common['Authorization']
+        },
+        setAuthData({ user, token }) {
+            this.user = user
+            this.token = token
+            localStorage.setItem('token', token)
+            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
         },
         updateEmailVerification(isVerified) {
             if (this.user) {
-                this.user.email_verified_at = isVerified ? new Date().toISOString() : null;
+                this.user.email_verified_at = isVerified ? new Date().toISOString() : null
             }
         },
         setUser(userData) {
-            this.user = userData;
+            this.user = userData
         },
     },
 })

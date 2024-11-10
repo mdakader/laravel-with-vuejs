@@ -105,7 +105,30 @@ const routes = [
         component: () => import('@/views/ProductEdit.vue'),
         meta: { requiresAuth: true },
         props: true
-    }
+    },
+
+    {
+        path: '/shop',
+        name: 'shop',
+        component: () => import('@/components/ShopGrid.vue')
+    },
+    {
+        path: '/shop/product/:slug',
+        name: 'shop-product',
+        component: () => import('@/views/ShopProduct.vue')
+    },
+    {
+        path: '/cart',
+        name: 'cart',
+        component: () => import('@/views/Cart.vue')
+    },
+
+    {
+        path: '/checkout',
+        name: 'checkout',
+        component: () => import('@/views/Checkout.vue'),
+        meta: { requiresAuth: true }
+    },
 ]
 
 const router = createRouter({
