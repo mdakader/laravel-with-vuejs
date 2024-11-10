@@ -99,7 +99,7 @@
                     </div>
 
                     <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">Create Product</button>
+                        <button type="submit" class="btn btn-primary">Update Product</button>
                         <router-link to="/products" class="btn btn-secondary">Cancel</router-link>
                     </div>
                 </form>
@@ -109,15 +109,17 @@
 </template>
 
 <script setup>
-import {ref, onMounted} from 'vue';
-import {useProductStore} from '@/stores/productStore';
-import {storeToRefs} from 'pinia';
-import {useRouter} from 'vue-router';
+import { ref, onMounted } from 'vue';
+import { useProductStore } from '@/stores/productStore';
+import { storeToRefs } from 'pinia';
+import { useRoute, useRouter } from 'vue-router';
 
+const route = useRoute();
 const router = useRouter();
 const productStore = useProductStore();
-const {categories} = storeToRefs(productStore);
+const { categories, product } = storeToRefs(productStore);
 
+// Form object to store input values
 const form = ref({
     category_id: '',
     name: '',
@@ -129,20 +131,40 @@ const form = ref({
     image: null
 });
 
-onMounted(() => {
-    productStore.fetchCategories();
+// Fetch categories and product details on component mount
+onMounted(async () => {
+    const productId = route.params.id; // Get product ID from the route
+    await productStore.fetchCategories();
+    await productStore.fetchProduct(productId); // Fetch product data using the ID
+
+    if (productStore.product) {
+        // Populate form with fetched product data
+        form.value = {
+            category_id: productStore.product.category_id || '',
+            name: productStore.product.name || '',
+            description: productStore.product.description || '',
+            long_description: productStore.product.long_description || '',
+            price: productStore.product.price || '',
+            stock: productStore.product.stock || '',
+            is_active: productStore.product.is_active || true,
+            image: productStore.product.image || null,
+        };
+    }
 });
 
+// Handle file input for image changes
 const handleImageChange = (event) => {
     form.value.image = event.target.files[0];
 };
 
+// Submit handler to update product
 const handleSubmit = async () => {
     try {
-        await productStore.createProduct(form.value);
-        router.push('/products');
+        const productId = route.params.id; // Ensure you pass the correct ID
+        await productStore.updateProduct(productId, form.value);
+        router.push('/products'); // Redirect after successful update
     } catch (error) {
-        alert('Error creating product');
+        alert('Error updating product');
     }
 };
 </script>

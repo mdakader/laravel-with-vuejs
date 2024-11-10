@@ -11,41 +11,7 @@ use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
 {
-    /**
-     * Display a listing of products with optional filters
-     */
-//    public function index(Request $request)
-//    {
-//        $query = Product::with(['category', 'user']);
-//
-//        // Filter by category
-//        if ($request->has('category_id')) {
-//            $query->where('category_id', $request->category_id);
-//        }
-//
-//        // Filter by active status
-//        if ($request->has('is_active')) {
-//            $query->where('is_active', $request->is_active);
-//        }
-//
-//        // Search by name
-//        if ($request->has('search')) {
-//            $query->where('name', 'like', '%' . $request->search . '%');
-//        }
-//
-//        // Sort products
-//        $sortField = $request->get('sort_by', 'created_at');
-//        $sortDirection = $request->get('sort_direction', 'desc');
-//        $query->orderBy($sortField, $sortDirection);
-//
-//        $products = $query->paginate($request->get('per_page', 10));
-//
-//        return response()->json([
-//            'status' => 'success',
-//            'data' => $products,
-//        ]);
-//    }
-
+    
     public function index(Request $request)
     {
         $query = Product::with(['category', 'user']);
@@ -140,14 +106,14 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         $validator = Validator::make($request->all(), [
-            'category_id' => 'sometimes|exists:categories,id',
-            'name' => 'sometimes|string|max:255',
+            'category_id' => 'required|exists:categories,id',
+            'name' => 'required|string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'description' => 'nullable|string',
             'long_description' => 'nullable|string',
-            'price' => 'sometimes|numeric|min:0',
-            'stock' => 'sometimes|integer|min:0',
-            'is_active' => 'boolean'
+            'price' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
+            'is_active' => 'boolean' // Make sure this accepts true/false values
         ]);
 
         if ($validator->fails()) {

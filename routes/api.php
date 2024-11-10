@@ -26,22 +26,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
 
-
     // Routes  Category
     Route::apiResource('categories', CategoryController::class);
 
     // Routes  Post
     Route::apiResource('posts', PostController::class);
 
-    // Products routes
-
-    // or if using getCategories method
-    Route::get('/categories/select', [ProductController::class,'getCategories']);
-
-    // Categories routes
-    Route::get('/get-categories', [ProductController::class, 'index']);
-
-//    Route::get('/products', [ProductController::class, 'index']);
+    //  Route::get('/products', [ProductController::class, 'index']);
     Route::get('/get-categories', [ProductController::class, 'getCategories']);
 
     // Get categories for select option
