@@ -74,7 +74,12 @@ export const useProductStore = defineStore('product', {
                 const formData = new FormData();
                 Object.keys(productData).forEach(key => {
                     if (productData[key] !== null && productData[key] !== undefined) {
-                        formData.append(key, productData[key]);
+                        // Convert boolean to string '1' or '0' for FormData
+                        if (key === 'is_active') {
+                            formData.append(key, productData[key] ? '1' : '0');
+                        } else {
+                            formData.append(key, productData[key]);
+                        }
                     }
                 });
                 formData.append('_method', 'PUT');
