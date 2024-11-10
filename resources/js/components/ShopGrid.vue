@@ -116,7 +116,8 @@ const addToCart = async (product) => {
         console.log('Attempting to add product to cart:', product);
         await cartStore.addToCart({
             product_id: product.id,
-            quantity: 1
+            quantity: 1,
+            product: product  // Ensure product data is passed here
         });
         alert('Product added to cart successfully!');
     } catch (error) {
@@ -124,4 +125,5 @@ const addToCart = async (product) => {
         alert('Error adding product to cart');
     }
 };
+
 </script>
