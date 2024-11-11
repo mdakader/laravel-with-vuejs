@@ -123,7 +123,7 @@ const proceedToCheckout = () => {
         localStorage.setItem('redirectAfterLogin', '/checkout');
         router.push('/login');
     } else {
-        router.push('/checkout');
+        router.push('/cart/checkout');
     }
 }
 </script>

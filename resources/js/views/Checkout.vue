@@ -1,4 +1,4 @@
-Checkout.vue
+<!--Checkout.vue-->
 <template>
     <div class="container mt-4">
         <h2>Checkout</h2>
