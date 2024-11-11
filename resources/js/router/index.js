@@ -166,17 +166,20 @@ router.beforeEach(async (to, from, next) => {
 
     try {
         if (to.meta.requiresAuth && !auth.isAuthenticated) {
-            localStorage.setItem('redirectAfterLogin', to.fullPath);
+            // If trying to access checkout, store that as redirect
+            if (to.path === '/cart/checkout') {
+                localStorage.setItem('redirectAfterLogin', '/cart/checkout');
+            } else {
+                localStorage.setItem('redirectAfterLogin', to.fullPath);
+            }
             next('/login');
             return;
         }
 
-        // Only initialize cart if it hasn't been initialized
         if (!cart.initialized) {
             await cart.initialize();
         }
 
-        // Refresh cart data when navigating to cart-related pages
         if (['/cart', '/checkout'].includes(to.path)) {
             await cart.refreshCart();
         }

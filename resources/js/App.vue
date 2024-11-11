@@ -15,7 +15,6 @@
                         <li class="nav-item">
                             <router-link class="nav-link" to="/cart/checkout">Checkout</router-link>
                         </li>
-                            <!-- Cart Icon with Count -->
                         <!-- Cart Icon with Count -->
                         <li class="nav-item position-relative">
                             <router-link class="nav-link" to="/cart">
@@ -26,28 +25,28 @@
                             </router-link>
                         </li>
 
-                            <div class="d-inline-flex" v-if="!auth.isAuthenticated">
-                                <li class="nav-item">
-                                    <router-link class="nav-link" to="/login">Login</router-link>
-                                </li>
-                                <li class="nav-item">
-                                    <router-link class="nav-link" to="/register">Register</router-link>
-                                </li>
+                        <div class="d-inline-flex" v-if="!auth.isAuthenticated">
+                            <li class="nav-item">
+                                <router-link class="nav-link" to="/login">Login</router-link>
+                            </li>
+                            <li class="nav-item">
+                                <router-link class="nav-link" to="/register">Register</router-link>
+                            </li>
 
 
-                            </div>
+                        </div>
 
-                            <div class="d-inline-flex" v-if="auth.isAuthenticated">
-                                <router-link class="nav-link" to="/posts">Blog Posts</router-link>
-                                <router-link class="nav-link" to="/categories">Categories</router-link>
-                                <router-link class="nav-link" to="/products">Products</router-link>
-                                <router-link class="nav-link" to="/profile">Profile</router-link>
-                                <router-link class="nav-link" to="/dashboard">Dashboard</router-link>
-                                <a @click.prevent="handleLogout" class="nav-link" href="#">Logout</a>
-                            </div>
-                        </ul>
+                        <div class="d-inline-flex" v-if="auth.isAuthenticated">
+                            <router-link class="nav-link" to="/posts">Blog Posts</router-link>
+                            <router-link class="nav-link" to="/categories">Categories</router-link>
+                            <router-link class="nav-link" to="/products">Products</router-link>
+                            <router-link class="nav-link" to="/profile">Profile</router-link>
+                            <router-link class="nav-link" to="/dashboard">Dashboard</router-link>
+                            <a @click.prevent="handleLogout" class="nav-link" href="#">Logout</a>
+                        </div>
                     </ul>
                 </ul>
+            </ul>
         </nav>
 
         <router-view></router-view>
@@ -66,19 +65,29 @@ const router = useRouter()
 
 onMounted(async () => {
     try {
+        // Check for stored token and authenticate
         if (!auth.token && localStorage.getItem('token')) {
             auth.token = localStorage.getItem('token')
         }
 
+        // If authenticated, fetch user data
         if (auth.token) {
             await auth.fetchUser()
             if (!auth.isEmailVerified) {
                 router.push('/verify-email')
+                return
             }
         }
 
-        // Initialize cart regardless of auth status
-        await cart.initializeAndRefresh();
+        // Initialize cart
+        if (auth.isAuthenticated) {
+            // For authenticated users, initialize server cart
+            await cart.initialize()
+        } else {
+            // For guest users, load cart from localStorage
+            const guestCart = JSON.parse(localStorage.getItem('guestCart') || '[]')
+            cart.setGuestCart(guestCart)
+        }
 
     } catch (error) {
         console.error('Authentication error:', error)
@@ -91,6 +100,7 @@ const handleLogout = async () => {
     try {
         await auth.logout()
         cart.reset() // Reset cart on logout
+        localStorage.removeItem('guestCart') // Clear guest cart as well
     } catch (error) {
         console.error('Logout error:', error)
     } finally {
