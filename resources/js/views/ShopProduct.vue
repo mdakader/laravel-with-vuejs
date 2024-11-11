@@ -66,18 +66,41 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useShopStore } from '../stores/shopStore';
-import { useCartStore } from '../stores/cartStore';
-import { useNotification } from '../app'
+import { useCartStore } from '../stores/cartStore'; // Make sure path is correct
+import { useNotification } from '../app';
+
 const route = useRoute();
 const shopStore = useShopStore();
 const cartStore = useCartStore();
-const quantity = ref(1); // Initial quantity set to 1
+const notification = useNotification();
+const quantity = ref(1);
 
 const product = computed(() => shopStore.product);
 
 onMounted(async () => {
-    await shopStore.fetchProduct(route.params.slug);
+    await Promise.all([
+        shopStore.fetchProduct(route.params.slug),
+        cartStore.initialize()
+    ]);
 });
+
+const addToCart = async () => {
+    try {
+        await cartStore.addToCart({
+            product_id: product.value.id,
+            quantity: quantity.value,
+            product: {
+                name: product.value.name,
+                price: product.value.price,
+                image: product.value.image
+            }
+        });
+        notification.success('Product added to cart successfully');
+    } catch (error) {
+        console.error('Error adding product to cart:', error);
+        notification.error('Failed to add product to cart');
+    }
+};
 
 const incrementQuantity = () => {
     if (quantity.value < product.value.stock) { // Limit to stock availability
@@ -88,24 +111,6 @@ const incrementQuantity = () => {
 const decrementQuantity = () => {
     if (quantity.value > 1) { // Prevent quantity from going below 1
         quantity.value -= 1;
-    }
-};
-
-
-const addToCart = async () => {
-    try {
-        await cartStore.addToCart({
-            product_id: product.value.id,
-            quantity: quantity.value,
-            product: product.value
-        });
-        // Add success notification
-        const notification = useNotification();
-        notification.success('Product added to cart successfully');
-    } catch (error) {
-        console.error('Error adding product to cart:', error);
-        const notification = useNotification();
-        notification.error('Failed to add product to cart');
     }
 };
 

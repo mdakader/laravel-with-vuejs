@@ -55,7 +55,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted } from 'vue'
 import { useAuthStore } from './stores/auth'
 import { useCartStore } from './stores/cartStore'
 import { useRouter } from 'vue-router'
@@ -66,7 +66,6 @@ const router = useRouter()
 
 onMounted(async () => {
     try {
-        // Initialize the auth token from localStorage if available
         if (!auth.token && localStorage.getItem('token')) {
             auth.token = localStorage.getItem('token')
         }
@@ -76,12 +75,11 @@ onMounted(async () => {
             if (!auth.isEmailVerified) {
                 router.push('/verify-email')
             }
-            // Initialize the cart after fetching user data
-            await cart.initialize()
-        } else {
-            // Load guest cart if not authenticated
-            await cart.initialize()
         }
+
+        // Initialize cart regardless of auth status
+        await cart.initializeAndRefresh();
+
     } catch (error) {
         console.error('Authentication error:', error)
         auth.clearAuthData()
@@ -92,12 +90,11 @@ onMounted(async () => {
 const handleLogout = async () => {
     try {
         await auth.logout()
-        cart.cartCount = 0 // Reset cart count on logout
+        cart.reset() // Reset cart on logout
     } catch (error) {
         console.error('Logout error:', error)
     } finally {
         router.push('/login')
     }
 }
-
 </script>

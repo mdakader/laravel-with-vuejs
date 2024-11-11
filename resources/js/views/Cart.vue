@@ -75,6 +75,7 @@
     </div>
 </template>
 
+<!--views/Cart.vue-->
 <script setup>
 import { onMounted, watch } from 'vue'
 import { useCartStore } from '../stores/cartStore'
@@ -85,50 +86,44 @@ const cart = useCartStore()
 const auth = useAuthStore()
 const router = useRouter()
 
-// Initialize cart when component mounts
 onMounted(async () => {
-    await initializeCart()
+    await cart.initializeAndRefresh();
 })
 
 // Watch for auth changes and reinitialize cart
 watch(() => auth.isAuthenticated, async (newValue) => {
     if (newValue) {
-        await initializeCart()
+        await cart.initializeAndRefresh();
     }
 })
 
-const initializeCart = async () => {
-    cart.reset() // Reset cart state before initializing
-    await cart.initialize() // Initialize cart with fresh data
-}
-
 const updateQuantity = async (item, change) => {
-    const newQuantity = item.quantity + change
+    const newQuantity = item.quantity + change;
     if (newQuantity > 0) {
         if (auth.isAuthenticated) {
-            await cart.updateQuantity(item.product_id, newQuantity)
+            await cart.updateQuantity(item.product_id, newQuantity);
+            await cart.refreshCart(); // Refresh cart after update
         } else {
-            cart.updateGuestQuantity(item.product_id, newQuantity)
+            cart.updateGuestQuantity(item.product_id, newQuantity);
         }
     }
 }
 
 const removeItem = async (item) => {
     if (auth.isAuthenticated) {
-        await cart.removeItem(item.product_id)
+        await cart.removeItem(item.product_id);
+        await cart.refreshCart(); // Refresh cart after removal
     } else {
-        cart.removeGuestItem(item.product_id)
+        cart.removeGuestItem(item.product_id);
     }
 }
 
 const proceedToCheckout = () => {
     if (!auth.isAuthenticated) {
-        // Store the current route path before redirecting
         localStorage.setItem('redirectAfterLogin', '/checkout');
         router.push('/login');
     } else {
         router.push('/checkout');
     }
 }
-
 </script>

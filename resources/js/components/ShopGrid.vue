@@ -77,14 +77,13 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useShopStore } from '../stores/shopStore';
-import { useCartStore } from '../stores/cartStore';
-import { useNotification } from '@/app'
+import { useCartStore } from '../stores/cartStore'; // Make sure path is correct
+import { useNotification } from '@/app';
 
 const shopStore = useShopStore();
 const cartStore = useCartStore();
-const selectedCategory = ref('');
-
 const notification = useNotification();
+const selectedCategory = ref('');
 
 const products = computed(() => shopStore.products);
 const categories = computed(() => shopStore.categories);
@@ -97,9 +96,28 @@ const totalPages = computed(() => {
 onMounted(async () => {
     await Promise.all([
         shopStore.fetchProducts(),
-        shopStore.fetchCategories()
+        shopStore.fetchCategories(),
+        cartStore.initialize() // Initialize cart when component mounts
     ]);
 });
+
+const addToCart = async (product) => {
+    try {
+        await cartStore.addToCart({
+            product_id: product.id,
+            quantity: 1,
+            product: {
+                name: product.name,
+                price: product.price,
+                image: product.image
+            }
+        });
+        notification.success('Product added to cart successfully');
+    } catch (error) {
+        console.error('Error adding product to cart:', error);
+        notification.error('Failed to add product to cart');
+    }
+};
 
 const filterProducts = async () => {
     await shopStore.fetchProducts({
@@ -114,18 +132,5 @@ const changePage = async (page) => {
     });
 };
 
-const addToCart = async (product) => {  // Add product parameter here
-    try {
-        await cartStore.addToCart({
-            product_id: product.id,      // Use product parameter directly
-            quantity: 1,                 // Set default quantity to 1 for grid view
-            product: product             // Pass the whole product
-        });
-        notification.success('Product added to cart successfully');
-    } catch (error) {
-        console.error('Error adding product to cart:', error);
-        notification.error('Failed to add product to cart');
-    }
-};
 
 </script>

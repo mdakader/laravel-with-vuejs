@@ -138,7 +138,6 @@ const router = createRouter({
     routes
 })
 
-// router/index.js
 router.beforeEach(async (to, from, next) => {
     const auth = useAuthStore();
     const cart = useCartStore();
@@ -150,13 +149,14 @@ router.beforeEach(async (to, from, next) => {
             return;
         }
 
-        if (auth.isAuthenticated && !auth.user) {
-            await auth.fetchUser();
-        }
-
-        // Only initialize cart if it hasn't been initialized yet
+        // Only initialize cart if it hasn't been initialized
         if (!cart.initialized) {
             await cart.initialize();
+        }
+
+        // Refresh cart data when navigating to cart-related pages
+        if (['/cart', '/checkout'].includes(to.path)) {
+            await cart.refreshCart();
         }
 
         next();
@@ -165,4 +165,5 @@ router.beforeEach(async (to, from, next) => {
         next('/login');
     }
 });
+
 export default router;

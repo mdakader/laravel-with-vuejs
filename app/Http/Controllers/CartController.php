@@ -32,6 +32,8 @@ class CartController extends Controller
         return response()->json(['items' => $cartItems]);
     }
 
+// CartController.php
+
     public function add(Request $request) {
         $request->validate([
             'product_id' => 'required|exists:products,id',
@@ -49,14 +51,17 @@ class CartController extends Controller
             }
 
             if (auth()->check()) {
+                // Check if item already exists in cart
                 $cartItem = Cart::where('user_id', auth()->id())
                     ->where('product_id', $request->product_id)
                     ->first();
 
                 if ($cartItem) {
+                    // Update existing cart item
                     $cartItem->quantity += $request->quantity;
                     $cartItem->save();
                 } else {
+                    // Create new cart item
                     Cart::create([
                         'user_id' => auth()->id(),
                         'product_id' => $request->product_id,
@@ -67,23 +72,7 @@ class CartController extends Controller
                 DB::commit();
 
                 // Return updated cart items
-                $cartItems = Cart::where('user_id', auth()->id())
-                    ->with('product')
-                    ->get()
-                    ->map(function ($item) {
-                        return [
-                            'product_id' => $item->product_id,
-                            'name' => $item->product->name,
-                            'price' => $item->product->price,
-                            'quantity' => $item->quantity,
-                            'image' => $item->product->image
-                        ];
-                    });
-
-                return response()->json([
-                    'message' => 'Product added to cart',
-                    'items' => $cartItems
-                ]);
+                return $this->index($request); // Reuse index method to return cart items
             }
 
             return response()->json([
@@ -92,7 +81,8 @@ class CartController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['message' => 'Error adding product to cart: ' . $e->getMessage()], 500);
+            \Log::error('Cart add error: ' . $e->getMessage());
+            return response()->json(['message' => 'Error adding product to cart'], 500);
         }
     }
 
