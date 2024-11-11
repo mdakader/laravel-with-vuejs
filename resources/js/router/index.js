@@ -132,10 +132,14 @@ const routes = [
         meta: { requiresAuth: true }
     },
     {
-        path: '/order/confirmation/:orderId',
+        path: '/order/confirmation',
         name: 'OrderConfirmation',
-        component: () => import('../views/OrderConfirmation.vue'),
-        props: true  // This allows route params to be passed as props
+        component: () => import('@/views/OrderConfirmation.vue'),
+        props: route => ({
+            paymentIntent: route.query.payment_intent,
+            paymentIntentClientSecret: route.query.payment_intent_client_secret,
+            redirectStatus: route.query.redirect_status
+        })
     },
     {
         path: '/orders',

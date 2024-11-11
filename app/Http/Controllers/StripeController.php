@@ -14,21 +14,35 @@ class StripeController extends Controller
 {
     public function createPaymentIntent(Request $request)
     {
-        Stripe::setApiKey(env('STRIPE_SECRET_KEY'));
-
-        $cartItems = Cart::where('user_id', auth()->id())->with('product')->get();
-        $totalAmount = 0;
-
-        foreach ($cartItems as $item) {
-            $totalAmount += $item->quantity * $item->product->price * 100; // Amount in cents
-        }
-
         try {
+            Stripe::setApiKey(env('STRIPE_SECRET_KEY'));
+
+            // Check if cart is empty
+            $cartItems = Cart::where('user_id', auth()->id())->with('product')->get();
+
+            if ($cartItems->isEmpty()) {
+                return response()->json(['message' => 'Cart is empty'], 400);
+            }
+
+            $totalAmount = 0;
+
+            foreach ($cartItems as $item) {
+                if (!$item->product) {
+                    \Log::error('Product not found for cart item: ' . $item->id);
+                    continue;
+                }
+                $totalAmount += $item->quantity * $item->product->price * 100;
+            }
+
+            if ($totalAmount <= 0) {
+                return response()->json(['message' => 'Invalid total amount'], 400);
+            }
+
             $paymentIntent = PaymentIntent::create([
-                'amount' => $totalAmount,  // Total amount in cents
+                'amount' => (int)$totalAmount,  // Ensure integer value
                 'currency' => 'usd',
-                'metadata' => [
-                    'integration_check' => 'accept_a_payment',
+                'automatic_payment_methods' => [
+                    'enabled' => true,
                 ],
             ]);
 
@@ -36,7 +50,10 @@ class StripeController extends Controller
                 'clientSecret' => $paymentIntent->client_secret
             ]);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Payment creation failed'], 500);
+            \Log::error('Payment Intent Creation Error: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Payment creation failed: ' . $e->getMessage()
+            ], 500);
         }
     }
 
@@ -47,13 +64,6 @@ class StripeController extends Controller
 
             // Clear cart for authenticated users
             $cartItems = Cart::where('user_id', auth()->id())->get();
-            Cart::where('user_id', auth()->id())->delete();
-
-            // Clear cart for guest users
-            $guestCart = json_decode($request->cookie('guest_cart'), true);
-            if ($guestCart) {
-                setcookie('guest_cart', '', time() - 3600, '/');
-            }
 
             // Create the order
             $order = Order::create([
@@ -61,7 +71,8 @@ class StripeController extends Controller
                 'total_amount' => $cartItems->sum(function ($item) {
                     return $item->quantity * $item->product->price;
                 }),
-                'status' => 'pending',
+                'status' => 'completed',
+                'payment_intent' => $request->input('payment_intent')
             ]);
 
             // Create order items
@@ -74,15 +85,18 @@ class StripeController extends Controller
                 ]);
             }
 
+            // Clear the cart
+            Cart::where('user_id', auth()->id())->delete();
+
             DB::commit();
 
-            // Return the order ID
             return response()->json([
                 'message' => 'Payment successful',
                 'order_id' => $order->id
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error('Payment success handling error: ' . $e->getMessage());
             return response()->json(['message' => 'Error processing payment'], 500);
         }
     }

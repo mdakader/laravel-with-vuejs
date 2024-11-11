@@ -1,6 +1,7 @@
 // stripeStore.js
 import { defineStore } from 'pinia';
 import axios from '../axios';
+import { useCartStore } from './cartStore';  // Add this import
 
 export const useStripeStore = defineStore('stripe', {
     state: () => ({
@@ -8,18 +9,20 @@ export const useStripeStore = defineStore('stripe', {
         error: null,
     }),
     actions: {
-
         async createPaymentIntent() {
             try {
                 this.loading = true;
                 this.error = null;
                 const response = await axios.post('/stripe/payment-intent');
-                return {
-                    clientSecret: response.data.clientSecret,
-                    orderId: response.data.orderId, // Ensure the server sends back an orderId
-                };
+
+                if (!response.data?.clientSecret) {
+                    throw new Error('Invalid response from server');
+                }
+
+                return response.data.clientSecret;
             } catch (error) {
                 this.error = error.response?.data?.message || 'Error creating payment intent';
+                console.error('Payment intent error:', error);
                 throw error;
             } finally {
                 this.loading = false;
@@ -32,15 +35,10 @@ export const useStripeStore = defineStore('stripe', {
                 this.error = null;
                 const response = await axios.post('/stripe/payment-success');
 
-                // Check for orderId in response
-                if (!response.data?.order_id) {
-                    throw new Error('No order ID received from server');
-                }
-
                 const cartStore = useCartStore();
-                cartStore.clearCart();
+                await cartStore.clearCart();
 
-                return response.data.order_id;
+                return response;
             } catch (error) {
                 this.error = error.response?.data?.message || 'Error confirming payment';
                 console.error('Error confirming payment:', error);
@@ -48,6 +46,6 @@ export const useStripeStore = defineStore('stripe', {
             } finally {
                 this.loading = false;
             }
-        }
+        },
     },
 });
