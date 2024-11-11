@@ -177,6 +177,30 @@ export const useCartStore = defineStore('cart', {
         async initializeAndRefresh() {
             await this.initialize();
             await this.refreshCart();
-        }
+        },
+        
+        async checkout() {
+            const authStore = useAuthStore();
+
+            // Check if user is logged in
+            if (!authStore.isAuthenticated) {
+                // Store current path for redirect after login
+                localStorage.setItem('redirectAfterLogin', '/checkout');
+                router.push('/login');
+                return;
+            }
+
+            try {
+                this.loading = true;
+                const response = await axios.post('/cart/checkout');
+                this.clearCart();
+                return response;
+            } catch (error) {
+                this.error = error.response?.data?.message || 'Error during checkout';
+                throw error;
+            } finally {
+                this.loading = false;
+            }
+        },
     }
 });
