@@ -13,7 +13,7 @@
                             <router-link class="nav-link" to="/shop">Shop</router-link>
                         </li>
                         <li class="nav-item">
-                            <router-link class="nav-link" to="/checkout">Checkout</router-link>
+                            <router-link class="nav-link" to="/cart/checkout">Checkout</router-link>
                         </li>
                             <!-- Cart Icon with Count -->
                         <!-- Cart Icon with Count -->

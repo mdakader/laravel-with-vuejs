@@ -7,6 +7,7 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\StripeController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -19,11 +20,6 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/shop', [ProductController::class, 'index']);
 Route::get('/shop/categories', [ProductController::class, 'getCategories']);
 Route::get('/shop/product/{product:slug}', [ProductController::class, 'show']);
-
-// Guest cart routes (use localStorage on frontend)
-//Route::get('/cart', [CartController::class, 'index']);
-//Route::post('/cart/add', [CartController::class, 'add']);
-//Route::post('/cart/remove', [CartController::class, 'remove']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -59,6 +55,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/cart/remove/{product_id}', [CartController::class, 'remove']);
     Route::post('/cart/checkout', [CartController::class, 'checkout']);
     Route::put('/cart/update-quantity', [CartController::class, 'updateQuantity']);
+
+    // Stripe routes
+    Route::post('/stripe/payment-intent', [StripeController::class, 'createPaymentIntent']);
+    Route::post('/stripe/payment-success', [StripeController::class, 'handlePaymentSuccess']);
+    Route::get('/order/confirmation/{orderId}', [StripeController::class, 'getOrderConfirmation']);
 
 });
 

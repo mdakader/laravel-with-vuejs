@@ -126,9 +126,27 @@ const routes = [
     },
 
     {
-        path: '/checkout',
+        path: '/cart/checkout',
         name: 'checkout',
         component: () => import('@/views/Checkout.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/order/confirmation/:orderId',
+        name: 'OrderConfirmation',
+        component: () => import('../views/OrderConfirmation.vue'),
+        props: true  // This allows route params to be passed as props
+    },
+    {
+        path: '/orders',
+        name: 'orders',
+        component: () => import('@/views/Orders.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/orders/:id',
+        name: 'order-details',
+        component: () => import('@/views/OrderDetails.vue'),
         meta: { requiresAuth: true }
     },
 ]

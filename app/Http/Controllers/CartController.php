@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cart;
+use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -154,18 +156,42 @@ class CartController extends Controller
                 }
             }
 
-            // Process checkout logic here
-            // For example: create order, update stock, etc.
+            // Create the order
+            $order = Order::create([
+                'user_id' => auth()->id(),
+                'total_amount' => $cartItems->sum(function ($item) {
+                    return $item->quantity * $item->product->price;
+                }),
+                'status' => 'pending',
+            ]);
+
+            // Create order items
+            foreach ($cartItems as $item) {
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'product_id' => $item->product_id,
+                    'quantity' => $item->quantity,
+                    'price' => $item->product->price,
+                ]);
+
+                // Update product stock
+                $item->product->decrement('stock', $item->quantity);
+            }
 
             // Clear cart after successful checkout
             Cart::where('user_id', auth()->id())->delete();
 
             DB::commit();
-            return response()->json(['message' => 'Checkout successful']);
+
+            return response()->json([
+                'message' => 'Checkout successful',
+                'order_id' => $order->id
+            ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['message' => 'Error during checkout'], 500);
         }
     }
+
 }

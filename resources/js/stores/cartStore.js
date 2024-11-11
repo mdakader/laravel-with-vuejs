@@ -159,32 +159,18 @@ export const useCartStore = defineStore('cart', {
                 console.error('Error fetching cart:', error);
             }
         },
-        reset() {
-            this.cartItems = [];
-            this.cartCount = 0;
-            this.loading = false;
-            this.error = null;
-            this.initialized = false;
-        },
-
-        clearCart() {
-            this.cartItems = [];
-            this.cartCount = 0;
-            localStorage.removeItem('guestCart');
-        },
 
         // Add the initializeAndRefresh method
         async initializeAndRefresh() {
             await this.initialize();
             await this.refreshCart();
         },
-        
+
+        // In cartStore.js
         async checkout() {
             const authStore = useAuthStore();
 
-            // Check if user is logged in
             if (!authStore.isAuthenticated) {
-                // Store current path for redirect after login
                 localStorage.setItem('redirectAfterLogin', '/checkout');
                 router.push('/login');
                 return;
@@ -193,6 +179,12 @@ export const useCartStore = defineStore('cart', {
             try {
                 this.loading = true;
                 const response = await axios.post('/cart/checkout');
+
+                // Make sure the response includes the order_id
+                if (!response.data?.order_id) {
+                    throw new Error('No order ID received from server');
+                }
+
                 this.clearCart();
                 return response;
             } catch (error) {
@@ -202,5 +194,31 @@ export const useCartStore = defineStore('cart', {
                 this.loading = false;
             }
         },
+
+        clearCart() {
+            this.cartItems = [];
+            this.cartCount = 0;
+            localStorage.removeItem('guestCart');
+            localStorage.removeItem('redirectAfterLogin');
+        },
+
+        reset() {
+            this.cartItems = [];
+            this.cartCount = 0;
+            this.loading = false;
+            this.error = null;
+            this.initialized = false;
+        },
+
+        async getOrderConfirmation(orderId) {
+            try {
+                const response = await axios.get(`/order/confirmation/${orderId}`);
+                return response.data.order;
+            } catch (error) {
+                console.error('Error fetching order confirmation:', error);
+                throw new Error('An error occurred while fetching the order information. Please try again.');
+            }
+        }
+
     }
 });
