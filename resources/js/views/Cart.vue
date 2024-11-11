@@ -119,4 +119,5 @@ const proceedToCheckout = () => {
         router.push('/checkout')
     }
 }
+
 </script>

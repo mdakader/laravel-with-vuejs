@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import axios from '../axios'
 import router from '../router'
+import { useCartStore } from './cartStore'
 
 export const useAuthStore = defineStore('auth', {
     state: () => ({
@@ -32,24 +33,16 @@ export const useAuthStore = defineStore('auth', {
 
                 const cartStore = useCartStore()
                 const guestCart = JSON.parse(localStorage.getItem('guestCart') || '[]')
-                console.log('Guest Cart:', guestCart) // Debugging line
 
-                if (guestCart.length > 0) {
-                    for (const item of guestCart) {
-                        console.log('Adding item:', item) // Debugging line
-                        await cartStore.addToCart({
-                            product_id: item.product_id,
-                            quantity: item.quantity
-                        })
-                    }
-                    localStorage.removeItem('guestCart')
+                // Transfer guest cart items to authenticated user's backend cart
+                for (const item of guestCart) {
+                    await cartStore.addToCart(item)
                 }
+                localStorage.removeItem('guestCart')  // Clear guest cart after sync
 
                 const redirect = localStorage.getItem('redirectAfterLogin') || '/dashboard'
                 localStorage.removeItem('redirectAfterLogin')
                 router.push(redirect)
-
-                return response
             } catch (error) {
                 console.error('Login error:', error.response?.data || error)
                 throw error
@@ -60,6 +53,9 @@ export const useAuthStore = defineStore('auth', {
             try {
                 await axios.post('/logout')
                 this.clearAuthData()
+
+                const cartStore = useCartStore()
+                cartStore.clearCart()  // Reset the cart data on logout
                 router.push('/login')
             } catch (error) {
                 console.warn('Logout error:', error.response?.data || error)
@@ -74,7 +70,7 @@ export const useAuthStore = defineStore('auth', {
                 this.user = response.data
             } catch (error) {
                 console.error('Fetch user error:', error.response?.data || error)
-                this.clearAuthData()
+                this.clearAuthData() // Only clear data if fetch fails
                 router.push('/login')
             } finally {
                 this.isLoading = false
@@ -100,5 +96,6 @@ export const useAuthStore = defineStore('auth', {
         setUser(userData) {
             this.user = userData
         },
+
     },
 })

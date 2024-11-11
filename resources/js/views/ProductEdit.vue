@@ -113,7 +113,9 @@
 import { ref, onMounted, computed } from 'vue';
 import { useProductStore } from '../stores/productStore';
 import { useRouter, useRoute } from 'vue-router';
+import { useNotification } from '../app'
 
+const notification = useNotification();
 const router = useRouter();
 const route = useRoute();
 const productStore = useProductStore();
@@ -179,10 +181,11 @@ const handleSubmit = async () => {
         } else {
             await productStore.createProduct(formData);
         }
-
+        notification.success('Product has updated successful');
         router.push('/products');
     } catch (error) {
         console.error('Error:', error.response?.data);
+        notification.error('Product updated failed');
         if (error.response?.data?.errors) {
             errors.value = error.response.data.errors;
         } else {

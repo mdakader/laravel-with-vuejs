@@ -137,20 +137,36 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from, next) => {
-    const auth = useAuthStore();
+    const auth = useAuthStore()
 
-    // Load user data if it hasn’t been loaded
-    if (!auth.user && auth.token) {
-        await auth.fetchUser();
-    }
-
+    // Redirect to login if route requires authentication and no token exists
     if (to.meta.requiresAuth && !auth.isAuthenticated) {
-        next('/login');
-    } else if (to.meta.requiresVerification && !auth.isEmailVerified) {
-        next('/verify-email');
-    } else {
-        next();
+        localStorage.setItem('redirectAfterLogin', to.fullPath)
+        return next('/login')
     }
-});
+
+    // If token is present but user data isn’t loaded, fetch user data
+    if (auth.token && !auth.user) {
+        try {
+            await auth.fetchUser()
+            // Redirect to verify email if required
+            if (to.meta.requiresVerification && !auth.isEmailVerified) {
+                return next('/verify-email')
+            }
+        } catch (error) {
+            auth.clearAuthData()
+            return next('/login')
+        }
+    }
+
+    // Redirect authenticated users from login/register to dashboard
+    if (auth.isAuthenticated && (to.path === '/login' || to.path === '/register')) {
+        return next('/dashboard')
+    }
+
+    next()
+})
+
+
 
 export default router;

@@ -67,7 +67,7 @@ import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useShopStore } from '../stores/shopStore';
 import { useCartStore } from '../stores/cartStore';
-
+import { useNotification } from '../app'
 const route = useRoute();
 const shopStore = useShopStore();
 const cartStore = useCartStore();
@@ -91,29 +91,22 @@ const decrementQuantity = () => {
     }
 };
 
+
 const addToCart = async () => {
-    if (!product.value) {
-        alert('Product not found');
-        return;
-    }
-
     try {
-        console.log('Adding product to cart:', {
-            product_id: product.value.id,
-            quantity: quantity.value,
-            product: product.value
-        });
-
         await cartStore.addToCart({
             product_id: product.value.id,
             quantity: quantity.value,
             product: product.value
         });
-
-        alert('Product added to cart successfully!');
+        // Add success notification
+        const notification = useNotification();
+        notification.success('Product added to cart successfully');
     } catch (error) {
-        console.error('Error in addToCart:', error);
-        alert(error.message || 'Error adding product to cart');
+        console.error('Error adding product to cart:', error);
+        const notification = useNotification();
+        notification.error('Failed to add product to cart');
     }
 };
+
 </script>

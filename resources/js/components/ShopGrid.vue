@@ -78,10 +78,13 @@
 import { ref, onMounted, computed } from 'vue';
 import { useShopStore } from '../stores/shopStore';
 import { useCartStore } from '../stores/cartStore';
+import { useNotification } from '@/app'
 
 const shopStore = useShopStore();
 const cartStore = useCartStore();
 const selectedCategory = ref('');
+
+const notification = useNotification();
 
 const products = computed(() => shopStore.products);
 const categories = computed(() => shopStore.categories);
@@ -111,18 +114,17 @@ const changePage = async (page) => {
     });
 };
 
-const addToCart = async (product) => {
+const addToCart = async (product) => {  // Add product parameter here
     try {
-        console.log('Attempting to add product to cart:', product);
         await cartStore.addToCart({
-            product_id: product.id,
-            quantity: 1,
-            product: product  // Ensure product data is passed here
+            product_id: product.id,      // Use product parameter directly
+            quantity: 1,                 // Set default quantity to 1 for grid view
+            product: product             // Pass the whole product
         });
-        alert('Product added to cart successfully!');
+        notification.success('Product added to cart successfully');
     } catch (error) {
         console.error('Error adding product to cart:', error);
-        alert('Error adding product to cart');
+        notification.error('Failed to add product to cart');
     }
 };
 

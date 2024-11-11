@@ -20,9 +20,11 @@ Route::get('/shop', [ProductController::class, 'index']);
 Route::get('/shop/categories', [ProductController::class, 'getCategories']);
 Route::get('/shop/product/{product:slug}', [ProductController::class, 'show']);
 
-// Guest cart routes
-Route::post('/cart/add', [CartController::class, 'add']);
+// Guest cart routes (use localStorage on frontend)
+
 Route::get('/cart', [CartController::class, 'index']);
+Route::post('/cart/add', [CartController::class, 'add']);
+Route::post('/cart/remove', [CartController::class, 'remove']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);

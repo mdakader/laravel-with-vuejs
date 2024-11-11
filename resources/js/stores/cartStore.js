@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import axios from '../axios';
-import { useAuthStore } from './auth'; // Make sure this is the correct path
+import { useAuthStore } from './auth';
 
 export const useCartStore = defineStore('cart', {
     state: () => ({
@@ -11,14 +11,29 @@ export const useCartStore = defineStore('cart', {
     }),
 
     getters: {
-        totalAmount: (state) => {
-            return state.cartItems.reduce((total, item) => {
-                return total + (item.price * item.quantity);
-            }, 0).toFixed(2);
+        totalAmount(state) {
+            return state.cartItems.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2);
         }
     },
 
     actions: {
+        async initialize() {
+            const auth = useAuthStore();
+            try {
+                if (auth.isAuthenticated) {
+                    // Fetch cart data for authenticated user
+                    const response = await axios.get('/cart');
+                    this.cartItems = response.data.items || [];
+                } else {
+                    // Load guest cart from localStorage
+                    const guestCart = JSON.parse(localStorage.getItem('guestCart') || '[]');
+                    this.cartItems = guestCart;
+                }
+            } catch (error) {
+                console.error('Error initializing cart:', error);
+            }
+        },
+
         async getCartCount() {
             try {
                 const response = await axios.get('/cart');
@@ -30,24 +45,19 @@ export const useCartStore = defineStore('cart', {
         },
 
         async addToCart({ product_id, quantity, product }) {
-            const authStore = useAuthStore(); // Get the authentication store instance
+            const authStore = useAuthStore();
             try {
                 this.loading = true;
                 this.error = null;
 
-                const response = await axios.post('/cart/add', {
-                    product_id,
-                    quantity
-                });
-
                 if (authStore.isAuthenticated) {
+                    // Add item to the backend cart for authenticated user
+                    await axios.post('/cart/add', { product_id, quantity });
                     await this.getCartCount();
                 } else {
-                    // For guest users, store complete product info
+                    // Add item to guest cart for unauthenticated user
                     this.addToGuestCart(product_id, quantity, product);
                 }
-
-                return response;
             } catch (error) {
                 this.error = error.response?.data?.message || 'Error adding to cart';
                 throw error;
@@ -56,15 +66,14 @@ export const useCartStore = defineStore('cart', {
             }
         },
 
-        // Guest cart methods with product info
-        async addToGuestCart(productId, quantity, product) {
+        addToGuestCart(productId, quantity, product) {
             if (!product) {
                 console.error("Product data is missing in guest cart");
                 return;
             }
             const guestCart = JSON.parse(localStorage.getItem('guestCart') || '[]');
-
             const existingItem = guestCart.find(item => item.product_id === productId);
+
             if (existingItem) {
                 existingItem.quantity += quantity;
             } else {
@@ -104,13 +113,9 @@ export const useCartStore = defineStore('cart', {
             this.loadGuestCart();
         },
 
-        // Authenticated cart methods
         async updateQuantity(productId, quantity) {
             try {
-                await axios.put('/cart/update-quantity', {
-                    product_id: productId,
-                    quantity: quantity
-                });
+                await axios.put('/cart/update-quantity', { product_id: productId, quantity });
                 await this.getCartCount();
             } catch (error) {
                 console.error('Error updating quantity:', error);
@@ -132,30 +137,6 @@ export const useCartStore = defineStore('cart', {
             this.cartItems = [];
             this.cartCount = 0;
             localStorage.removeItem('guestCart');
-        },
-
-        async checkout() {
-            const authStore = useAuthStore();
-
-            // Check if user is logged in
-            if (!authStore.isAuthenticated) {
-                // Store current path for redirect after login
-                localStorage.setItem('redirectAfterLogin', '/checkout');
-                router.push('/login');
-                return;
-            }
-
-            try {
-                this.loading = true;
-                const response = await axios.post('/cart/checkout');
-                this.clearCart();
-                return response;
-            } catch (error) {
-                this.error = error.response?.data?.message || 'Error during checkout';
-                throw error;
-            } finally {
-                this.loading = false;
-            }
-        },
+        }
     }
 });

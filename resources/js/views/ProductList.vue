@@ -1,66 +1,3 @@
-<script setup>
-import { ref, onMounted, computed } from 'vue';
-import { useProductStore } from '../stores/productStore';
-import { storeToRefs } from 'pinia';
-
-const productStore = useProductStore();
-// Use storeToRefs to maintain reactivity
-const { products, categories, pagination, loading } = storeToRefs(productStore);
-
-const filters = ref({
-    category_id: '',
-    search: '',
-    page: 1
-});
-
-const totalPages = computed(() => {
-    if (!pagination.value) return 0;
-    return Math.ceil(pagination.value.total / pagination.value.per_page);
-});
-
-onMounted(async () => {
-    try {
-        // Load initial data
-        await Promise.all([
-            productStore.fetchProducts(),
-            productStore.fetchCategories()
-        ]);
-    } catch (error) {
-        console.error('Error loading initial data:', error);
-    }
-});
-
-const filterProducts = async () => {
-    try {
-        filters.value.page = 1;
-        await productStore.fetchProducts(filters.value);
-    } catch (error) {
-        console.error('Error filtering products:', error);
-    }
-};
-
-const changePage = async (page) => {
-    try {
-        filters.value.page = page;
-        await productStore.fetchProducts(filters.value);
-    } catch (error) {
-        console.error('Error changing page:', error);
-    }
-};
-
-const deleteProduct = async (id) => {
-    if (confirm('Are you sure you want to delete this product?')) {
-        try {
-            await productStore.deleteProduct(id);
-            await productStore.fetchProducts(filters.value);
-        } catch (error) {
-            console.error('Error deleting product:', error);
-            alert('Error deleting product');
-        }
-    }
-};
-</script>
-
 <template>
     <div class="container mt-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -156,10 +93,13 @@ const deleteProduct = async (id) => {
                                     >
                                         Edit
                                     </router-link>
-                                    <button
-                                        @click="deleteProduct(product.id)"
-                                        class="btn btn-sm btn-outline-danger"
-                                    >
+<!--                                    <button-->
+<!--                                        @click="deleteProduct(product.id)"-->
+<!--                                        class="btn btn-sm btn-outline-danger"-->
+<!--                                    >-->
+<!--                                        Delete-->
+<!--                                    </button>-->
+                                    <button @click="handleDelete(product.id)"  class="btn btn-sm btn-outline-danger">
                                         Delete
                                     </button>
                                 </div>
@@ -197,3 +137,99 @@ const deleteProduct = async (id) => {
         </div>
     </div>
 </template>
+
+<script setup>
+import { ref, onMounted, computed } from 'vue';
+import { useProductStore } from '../stores/productStore';
+import { storeToRefs } from 'pinia';
+import Swal from "sweetalert2";
+
+const productStore = useProductStore();
+// Use storeToRefs to maintain reactivity
+const { products, categories, pagination, loading } = storeToRefs(productStore);
+
+const filters = ref({
+    category_id: '',
+    search: '',
+    page: 1
+});
+
+const totalPages = computed(() => {
+    if (!pagination.value) return 0;
+    return Math.ceil(pagination.value.total / pagination.value.per_page);
+});
+
+onMounted(async () => {
+    try {
+        // Load initial data
+        await Promise.all([
+            productStore.fetchProducts(),
+            productStore.fetchCategories()
+        ]);
+    } catch (error) {
+        console.error('Error loading initial data:', error);
+    }
+});
+
+const filterProducts = async () => {
+    try {
+        filters.value.page = 1;
+        await productStore.fetchProducts(filters.value);
+    } catch (error) {
+        console.error('Error filtering products:', error);
+    }
+};
+
+const changePage = async (page) => {
+    try {
+        filters.value.page = page;
+        await productStore.fetchProducts(filters.value);
+    } catch (error) {
+        console.error('Error changing page:', error);
+    }
+};
+
+// const deleteProduct = async (id) => {
+//     if (confirm('Are you sure you want to delete this product?')) {
+//         try {
+//             await productStore.deleteProduct(id);
+//             await productStore.fetchProducts(filters.value);
+//         } catch (error) {
+//             console.error('Error deleting product:', error);
+//             alert('Error deleting product');
+//         }
+//     }
+// };
+
+const handleDelete = async (id) => {
+    const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!',
+    });
+
+    if (result.isConfirmed) {
+        try {
+            await productStore.deleteProduct(id);
+            await productStore.fetchProducts(filters.value);
+            Swal.fire(
+                'Deleted!',
+                'The product has been deleted.',
+                'success'
+            );
+        } catch (error) {
+            console.error('Error deleting category:', error);
+            Swal.fire(
+                'Error!',
+                'There was a problem deleting the product.',
+                'error'
+            );
+        }
+    }
+};
+</script>
+

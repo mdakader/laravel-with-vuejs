@@ -38,11 +38,22 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue';
 import { useCartStore } from '../stores/cartStore';
 import { useRouter } from 'vue-router';
+import { useAuthStore } from '../stores/auth';
 
 const cartStore = useCartStore();
+const authStore = useAuthStore();
 const router = useRouter();
+
+onMounted(async () => {
+    if (authStore.isAuthenticated) {
+        await cartStore.getCartCount();
+    } else {
+        router.push('/login');
+    }
+});
 
 const processCheckout = async () => {
     try {

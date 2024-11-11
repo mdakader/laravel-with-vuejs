@@ -52,6 +52,6 @@ export const useShopStore = defineStore('shop', {
             } finally {
                 this.loading = false;
             }
-        }
+        },
     }
 });

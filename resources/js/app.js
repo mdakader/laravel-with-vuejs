@@ -47,6 +47,11 @@ export const useNotification = () => notification
 
 app.use(createPinia())
 app.use(router)
-app.mount('#app')
+
+// Mount app
+if (!document.getElementById('app').__vue_app__) {
+    app.mount('#app')
+}
+
 
 export default app

@@ -64,6 +64,7 @@ const router = useRouter()
 
 onMounted(async () => {
     try {
+        // Initialize the auth token from localStorage if available
         if (!auth.token && localStorage.getItem('token')) {
             auth.token = localStorage.getItem('token')
         }
@@ -73,15 +74,15 @@ onMounted(async () => {
             if (!auth.isEmailVerified) {
                 router.push('/verify-email')
             }
-            // Get cart count when authenticated
-            await cart.getCartCount()
+            // Initialize the cart after fetching user data
+            await cart.initialize()
         } else {
-            router.push('/login')
+            // Load guest cart if not authenticated
+            await cart.initialize()
         }
     } catch (error) {
         console.error('Authentication error:', error)
-        auth.token = null
-        localStorage.removeItem('token')
+        auth.clearAuthData()
         router.push('/login')
     }
 })
