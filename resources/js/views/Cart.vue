@@ -1,3 +1,4 @@
+<!--views/Car.vue-->
 <template>
     <div class="container">
         <h2>Shopping Cart</h2>
@@ -75,7 +76,7 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, watch } from 'vue'
 import { useCartStore } from '../stores/cartStore'
 import { useAuthStore } from '../stores/auth'
 import { useRouter } from 'vue-router'
@@ -84,13 +85,22 @@ const cart = useCartStore()
 const auth = useAuthStore()
 const router = useRouter()
 
+// Initialize cart when component mounts
 onMounted(async () => {
-    if (auth.isAuthenticated) {
-        await cart.getCartCount()
-    } else {
-        cart.loadGuestCart()
+    await initializeCart()
+})
+
+// Watch for auth changes and reinitialize cart
+watch(() => auth.isAuthenticated, async (newValue) => {
+    if (newValue) {
+        await initializeCart()
     }
 })
+
+const initializeCart = async () => {
+    cart.reset() // Reset cart state before initializing
+    await cart.initialize() // Initialize cart with fresh data
+}
 
 const updateQuantity = async (item, change) => {
     const newQuantity = item.quantity + change
@@ -113,10 +123,11 @@ const removeItem = async (item) => {
 
 const proceedToCheckout = () => {
     if (!auth.isAuthenticated) {
-        localStorage.setItem('redirectAfterLogin', '/checkout')
-        router.push('/login')
+        // Store the current route path before redirecting
+        localStorage.setItem('redirectAfterLogin', '/checkout');
+        router.push('/login');
     } else {
-        router.push('/checkout')
+        router.push('/checkout');
     }
 }
 

@@ -21,10 +21,9 @@ Route::get('/shop/categories', [ProductController::class, 'getCategories']);
 Route::get('/shop/product/{product:slug}', [ProductController::class, 'show']);
 
 // Guest cart routes (use localStorage on frontend)
-
-Route::get('/cart', [CartController::class, 'index']);
-Route::post('/cart/add', [CartController::class, 'add']);
-Route::post('/cart/remove', [CartController::class, 'remove']);
+//Route::get('/cart', [CartController::class, 'index']);
+//Route::post('/cart/add', [CartController::class, 'add']);
+//Route::post('/cart/remove', [CartController::class, 'remove']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -53,10 +52,12 @@ Route::middleware('auth:sanctum')->group(function () {
     // Product routes
     Route::apiResource('products', ProductController::class);
 
-    Route::get('/cart', [CartController::class, 'index']);
+    // Cart routes
     Route::post('/cart/update-quantity', [CartController::class, 'updateQuantity']);
-    Route::post('/cart/remove', [CartController::class, 'remove']);
     Route::post('/cart/transfer', [CartController::class, 'transfer']);
+    Route::get('/cart', [CartController::class, 'index']);
+    Route::post('/cart/add', [CartController::class, 'add']);
+    Route::delete('/cart/remove/{product_id}', [CartController::class, 'remove']);
     Route::post('/cart/checkout', [CartController::class, 'checkout']);
 
 });

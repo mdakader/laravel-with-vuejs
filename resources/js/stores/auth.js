@@ -1,7 +1,8 @@
+//stores/auth.js
 import { defineStore } from 'pinia'
+import { useCartStore } from './cartStore'
 import axios from '../axios'
 import router from '../router'
-import { useCartStore } from './cartStore'
 
 export const useAuthStore = defineStore('auth', {
     state: () => ({
@@ -26,20 +27,42 @@ export const useAuthStore = defineStore('auth', {
                 throw error
             }
         },
+// stores/auth.js - update the login action
         async login(credentials) {
             try {
+                // Authenticate and store token
                 const response = await axios.post('/login', credentials)
                 this.setAuthData(response.data)
 
+                // Get cart store
                 const cartStore = useCartStore()
+
+                // Store guest cart items before clearing
                 const guestCart = JSON.parse(localStorage.getItem('guestCart') || '[]')
 
-                // Transfer guest cart items to authenticated user's backend cart
-                for (const item of guestCart) {
-                    await cartStore.addToCart(item)
-                }
-                localStorage.removeItem('guestCart')  // Clear guest cart after sync
+                // Clear current cart state
+                cartStore.reset()
 
+                // Transfer guest cart to authenticated cart if there are items
+                if (guestCart.length > 0) {
+                    for (const item of guestCart) {
+                        await cartStore.addToCart({
+                            product_id: item.product_id,
+                            quantity: item.quantity,
+                            product: {
+                                name: item.name,
+                                price: item.price,
+                                image: item.image
+                            }
+                        })
+                    }
+                    localStorage.removeItem('guestCart')
+                }
+
+                // Initialize cart after transfer
+                await cartStore.initialize()
+
+                // Redirect after successful login
                 const redirect = localStorage.getItem('redirectAfterLogin') || '/dashboard'
                 localStorage.removeItem('redirectAfterLogin')
                 router.push(redirect)

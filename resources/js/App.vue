@@ -1,3 +1,4 @@
+<!--App.vue-->
 <template>
     <ul class="container header-section">
         <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
@@ -12,7 +13,7 @@
                             <router-link class="nav-link" to="/shop">Shop</router-link>
                         </li>
                         <li class="nav-item">
-                            <router-link class="nav-link" to="/cart">Cart</router-link>
+                            <router-link class="nav-link" to="/checkout">Checkout</router-link>
                         </li>
                             <!-- Cart Icon with Count -->
                         <!-- Cart Icon with Count -->
@@ -20,7 +21,7 @@
                             <router-link class="nav-link" to="/cart">
                                 <i class="bi bi-cart-plus"></i>
                                 <span v-if="cart.cartCount > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                    {{ cart.cartCount }}
+                                   Cart {{ cart.cartCount }}
                                 </span>
                             </router-link>
                         </li>
@@ -41,6 +42,7 @@
                                 <router-link class="nav-link" to="/categories">Categories</router-link>
                                 <router-link class="nav-link" to="/products">Products</router-link>
                                 <router-link class="nav-link" to="/profile">Profile</router-link>
+                                <router-link class="nav-link" to="/dashboard">Dashboard</router-link>
                                 <a @click.prevent="handleLogout" class="nav-link" href="#">Logout</a>
                             </div>
                         </ul>
@@ -97,4 +99,5 @@ const handleLogout = async () => {
         router.push('/login')
     }
 }
+
 </script>

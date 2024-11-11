@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class CartController extends Controller
 {
+
     public function index(Request $request)
     {
         if (auth()->check()) {
@@ -20,7 +21,8 @@ class CartController extends Controller
                         'product_id' => $item->product_id,
                         'name' => $item->product->name,
                         'price' => $item->product->price,
-                        'quantity' => $item->quantity
+                        'quantity' => $item->quantity,
+                        'image' => $item->product->image // Add image
                     ];
                 });
         } else {
@@ -39,7 +41,6 @@ class CartController extends Controller
         try {
             DB::beginTransaction();
 
-            // Check product stock
             $product = Product::findOrFail($request->product_id);
             if ($product->stock < $request->quantity) {
                 return response()->json([
@@ -64,20 +65,34 @@ class CartController extends Controller
                 }
 
                 DB::commit();
+
+                // Return updated cart items
+                $cartItems = Cart::where('user_id', auth()->id())
+                    ->with('product')
+                    ->get()
+                    ->map(function ($item) {
+                        return [
+                            'product_id' => $item->product_id,
+                            'name' => $item->product->name,
+                            'price' => $item->product->price,
+                            'quantity' => $item->quantity,
+                            'image' => $item->product->image
+                        ];
+                    });
+
                 return response()->json([
                     'message' => 'Product added to cart',
-                    'product' => $product // Send product data back
-                ]);
-            } else {
-                // For guest users, just return success with product data
-                return response()->json([
-                    'message' => 'Product added to cart',
-                    'product' => $product
+                    'items' => $cartItems
                 ]);
             }
+
+            return response()->json([
+                'message' => 'Product added to cart',
+                'items' => []
+            ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['message' => 'Error adding product to cart'], 500);
+            return response()->json(['message' => 'Error adding product to cart: ' . $e->getMessage()], 500);
         }
     }
 

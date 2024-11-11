@@ -1,4 +1,4 @@
-<!-- components/Checkout.vue -->
+<!--Checkout.vue-->
 <template>
     <div class="container mt-4">
         <h2>Checkout</h2>
@@ -38,22 +38,27 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
-import { useCartStore } from '../stores/cartStore';
-import { useRouter } from 'vue-router';
-import { useAuthStore } from '../stores/auth';
+import {onMounted} from 'vue';
+import {useCartStore} from '../stores/cartStore';
+import {useAuthStore} from '../stores/auth';
+import {useRouter} from 'vue-router';
 
 const cartStore = useCartStore();
 const authStore = useAuthStore();
 const router = useRouter();
 
 onMounted(async () => {
-    if (authStore.isAuthenticated) {
-        await cartStore.getCartCount();
-    } else {
+    if (!authStore.isAuthenticated) {
+        localStorage.setItem('redirectAfterLogin', '/checkout'); // Set redirect path
         router.push('/login');
+        return;
+    }
+    await cartStore.initialize(); // Ensure cart items are loaded
+    if (!cartStore.cartItems.length) {
+        router.push('/shop');
     }
 });
+
 
 const processCheckout = async () => {
     try {
@@ -63,5 +68,5 @@ const processCheckout = async () => {
     } catch (error) {
         alert(error.message || 'Error during checkout');
     }
-};
+}
 </script>
