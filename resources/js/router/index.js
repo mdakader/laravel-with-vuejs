@@ -129,7 +129,7 @@ const routes = [
         path: '/cart/checkout',
         name: 'checkout',
         component: () => import('@/views/Checkout.vue'),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, requiresVerification: true }
     },
     {
         path: '/order/confirmation',
@@ -145,13 +145,13 @@ const routes = [
         path: '/orders',
         name: 'orders',
         component: () => import('@/views/Orders.vue'),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, requiresVerification: true }
     },
     {
         path: '/orders/:id',
         name: 'order-details',
         component: () => import('@/views/OrderDetails.vue'),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, requiresVerification: true }
     },
 ]
 

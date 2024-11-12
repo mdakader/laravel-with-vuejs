@@ -37,7 +37,7 @@
                         </div>
 
                         <div class="d-inline-flex" v-if="auth.isAuthenticated">
-                            <router-link class="nav-link" to="/posts">Blog Posts</router-link>
+                            <router-link class="nav-link" to="/posts">Blog</router-link>
                             <router-link class="nav-link" to="/categories">Categories</router-link>
                             <router-link class="nav-link" to="/products">Products</router-link>
                             <router-link class="nav-link" to="/profile">Profile</router-link>
