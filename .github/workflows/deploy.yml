@@ -3,28 +3,56 @@ name: Deploy
 on:
   push:
     branches: [main]
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      # Set up PHP
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.1'
+
+      # Check out repository
       - uses: actions/checkout@v2
+
+      # Set up Node.js
       - uses: actions/setup-node@v3
         with: 
           node-version: 16
+
+      # Set up MySQL database
       - uses: mirromutth/mysql-action@v1.1
         with:
-          mysql database: laravel-test-db
-          mysql user: laravel_test_user
-          mysql password: example
+          mysql-database: laravel-test-db
+          mysql-user: laravel_test_user
+          mysql-password: example
+
+      # Cache dependencies
+      - name: Cache Composer dependencies
+        uses: actions/cache@v2
+        with:
+          path: vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+      - name: Cache Node dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-node-
+
+      # Set up environment
       - name: Copy .env
         run: cp .env.example .env
-      - name: Install composer Dependencies
+
+      # Install dependencies
+      - name: Install Composer dependencies
         run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
-      - name: Install node dependencies
+      - name: Install Node dependencies
         run: npm ci
+
+      # Set up project
       - name: Setup Project
         run: |
           php artisan config:clear
@@ -33,14 +61,18 @@ jobs:
           npm run build
       - name: Directory Permissions
         run: chmod 755 -R storage bootstrap/cache
-      - name: Run Unit tests
+
+      # Run Unit Tests
+      - name: Run Unit Tests
         env:
           APP_ENV: testing
           DB_CONNECTION: mysql
-          DB_USERNAME: abdulkco_lara103
-          DB_PASSWORD: .03.SspW24
-          DB_DATABASE: abdulkco_lara103
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_DATABASE: ${{ secrets.DB_DATABASE }}
         run: php artisan test
+
+      # Deploy to Server
       - name: Deploy to Server
         if: ${{ success() }}
         uses: appleboy/ssh-action@master
@@ -55,5 +87,5 @@ jobs:
             git pull
             npm ci
             npm run prod
-            composer i
+            composer install --no-dev --optimize-autoloader
             php artisan migrate --force
