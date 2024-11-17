@@ -52,6 +52,7 @@ jobs:
         target-server: ${{ secrets.SSH_HOST }}
         remote-user: ${{ secrets.SSH_USERNAME }}
         private-ssh-key: ${{ secrets.SSH_KEY }}
+        ssh-port: ${{ secrets.SSH_PORT }}
         destination-path: /home/abdulkco/public_html/laravel/laravel-vuejs-api/
         source-path: ./deployment.tar.gz
         
@@ -61,6 +62,7 @@ jobs:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.SSH_PORT }}
         script: |
           cd /home/abdulkco/public_html/laravel/laravel-vuejs-api
           tar -xzf deployment.tar.gz
