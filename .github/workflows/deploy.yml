@@ -43,31 +43,33 @@ jobs:
     - name: Generate deployment package
       run: |
         mkdir -p deployment
-        cp -r app bootstrap config database lang public resources routes storage vendor composer.json composer.lock artisan deployment/
-        cd deployment && tar -czf ../deployment.tar.gz .
+        cp -r app bootstrap config database public resources routes storage vendor composer.json composer.lock artisan deployment/
         
-    - name: Push to cPanel
-      uses: SamKirkland/web-deploy@v1
+    - name: 📂 Deploy to cPanel
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
       with:
-        target-server: ${{ secrets.SSH_HOST }}
-        remote-user: ${{ secrets.SSH_USERNAME }}
-        private-ssh-key: ${{ secrets.SSH_KEY }}
-        destination-path: ./home/abdulkco/public_html/laravel/laravel-vuejs-api
-        source-path: deployment.tar.gz
-        
-    - name: Execute deployment commands
-      uses: appleboy/ssh-action@master
+        server: ${{ secrets.SERVER }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        server-dir: /home/abdulkco/public_html/laravel/laravel-vuejs-api/
+        local-dir: ./deployment/
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/node_modules/**
+          .env
+          
+    - name: Post Deployment Commands
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
       with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USERNAME }}
-        key: ${{ secrets.SSH_KEY }}
+        server: ${{ secrets.SERVER }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        server-dir: /home/abdulkco/public_html/laravel/laravel-vuejs-api/
+        local-dir: ./deployment/
         script: |
-          cd public_html
-          tar -xzf deployment.tar.gz
-          rm deployment.tar.gz
           php artisan optimize:clear
           php artisan config:cache
           php artisan route:cache
           php artisan view:cache
-          php artisan migrate --force
           chmod -R 755 storage bootstrap/cache
