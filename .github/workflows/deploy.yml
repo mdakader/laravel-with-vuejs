@@ -5,7 +5,7 @@ on:
       - master
 jobs:
   FTP-Deploy-Action:
-    name: FTP-Deploy-Action
+    name: deploy
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2.1.0
