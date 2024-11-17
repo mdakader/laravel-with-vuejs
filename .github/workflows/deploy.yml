@@ -9,9 +9,7 @@ jobs:
     name: deploy
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2.1.0
-      with:
-        fetch-depth: 2 
+    - uses: actions/checkout@v2
 
     - name: Build assets
       run: npm install && npm run build
@@ -24,16 +22,10 @@ jobs:
 
     - name: Install PHP dependencies
       run: composer install --no-dev --optimize-autoloader
-      
-    - name: Optimize Laravel Application
-      run: |
-        php artisan config:cache
-        php artisan route:cache
-        php artisan view:cache
 
-    - name: FTP-Deploy-Action
-      uses: abdulkco/FTP-Deploy-Action@4.3.3
+    - name: Deploy via FTP
+      uses: SamKirkland/FTP-Deploy-Action@4.4.0
       with:
-        server: ${{ secrets.SERVER }}
-        username: ${{ secrets.USERNAME }}
-        password: ${{ secrets.PASSWORD }}
+        ftp-server: ${{ secrets.FTP_SERVER }}
+        ftp-username: ${{ secrets.FTP_USERNAME }}
+        ftp-password: ${{ secrets.FTP_PASSWORD }}
