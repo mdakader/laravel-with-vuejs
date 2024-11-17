@@ -83,7 +83,7 @@ jobs:
           script_stop: true
           script: |
             cd apps
-            cd laravel-example
+            cd /home/abdulkco/public_html/laravel/laravel-blog-app
             git pull
             npm ci
             npm run prod
