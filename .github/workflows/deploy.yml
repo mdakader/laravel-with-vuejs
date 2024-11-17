@@ -1,49 +1,73 @@
-name: Publish Website to CPanel
+name: Deploy Laravel Application
 on:
   push:
-    branches:
-      - master
+    branches: [ master ]
 
 jobs:
-  FTP-Deploy-Action:
-    name: FTP-Deploy-Action
+  deploy:
     runs-on: ubuntu-latest
-    
     steps:
-    - uses: actions/checkout@v4  # Updated to v4 for Node 20 support
+    - uses: actions/checkout@v3
+      
+    - name: Cache Composer dependencies
+      uses: actions/cache@v3
       with:
-        fetch-depth: 2
-    
-    # Add Node.js setup
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        
-    - name: Build assets
-      run: |
-        npm ci  # More reliable than npm install for CI environments
-        npm run build
-        
-    - name: Install PHP and Composer
+        path: vendor
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: ${{ runner.os }}-composer-
+
+    - name: Install PHP and extensions
       uses: shivammathur/setup-php@v2
       with:
         php-version: '8.2'
-        tools: composer
+        extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql, bcmath, zip
         
-    - name: Install PHP dependencies
-      run: composer install --no-dev --optimize-autoloader
+    - name: Validate Composer
+      run: composer validate
+
+    - name: Install Dependencies
+      run: |
+        composer install --prefer-dist --no-progress --no-interaction --optimize-autoloader --no-dev
         
-    - name: FTP-Deploy-Action
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
       with:
-        server: ${{ secrets.SERVER }}
-        username: ${{ secrets.USERNAME }}
-        password: ${{ secrets.PASSWORD }}
-        server-dir: public_html/  # Specify your target directory on cPanel
-        exclude: |
-          **/.git*
-          **/.git*/**
-          **/node_modules/**
-          test/**
-          .env
+        node-version: '20'
+        cache: 'npm'
+        
+    - name: Install NPM Dependencies and Build Assets
+      run: |
+        npm ci
+        npm run build
+        
+    - name: Generate deployment package
+      run: |
+        mkdir -p deployment
+        cp -r app bootstrap config database lang public resources routes storage vendor composer.json composer.lock artisan deployment/
+        cd deployment && tar -czf ../deployment.tar.gz .
+        
+    - name: Push to cPanel
+      uses: SamKirkland/web-deploy@v1
+      with:
+        target-server: ${{ secrets.SSH_HOST }}
+        remote-user: ${{ secrets.SSH_USERNAME }}
+        private-ssh-key: ${{ secrets.SSH_KEY }}
+        destination-path: ./home/abdulkco/public_html/laravel/laravel-vuejs-api
+        source-path: deployment.tar.gz
+        
+    - name: Execute deployment commands
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        script: |
+          cd public_html
+          tar -xzf deployment.tar.gz
+          rm deployment.tar.gz
+          php artisan optimize:clear
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+          php artisan migrate --force
+          chmod -R 755 storage bootstrap/cache
