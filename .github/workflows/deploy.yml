@@ -1,0 +1,49 @@
+name: Publish Website to CPanel
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  FTP-Deploy-Action:
+    name: FTP-Deploy-Action
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4  # Updated to v4 for Node 20 support
+      with:
+        fetch-depth: 2
+    
+    # Add Node.js setup
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        
+    - name: Build assets
+      run: |
+        npm ci  # More reliable than npm install for CI environments
+        npm run build
+        
+    - name: Install PHP and Composer
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        tools: composer
+        
+    - name: Install PHP dependencies
+      run: composer install --no-dev --optimize-autoloader
+        
+    - name: FTP-Deploy-Action
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      with:
+        server: ${{ secrets.SERVER }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        server-dir: public_html/  # Specify your target directory on cPanel
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/node_modules/**
+          test/**
+          .env
