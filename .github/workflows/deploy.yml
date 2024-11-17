@@ -27,7 +27,7 @@ jobs:
           mysql_database: ${{ secrets.DB_DATABASE }}
           mysql_user: ${{ secrets.DB_USERNAME }}
           mysql_password: ${{ secrets.DB_PASSWORD }}
-          mysql_root_password: ${{ secrets.DB_PASSWORD }}
+          mysql_root_password: ${{ secrets.DB__ROOT_PASSWORD }}
 
       # Cache dependencies
       - name: Cache Composer dependencies
