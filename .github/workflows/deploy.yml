@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - master
+
 jobs:
   FTP-Deploy-Action:
     name: deploy
@@ -11,18 +12,25 @@ jobs:
     - uses: actions/checkout@v2.1.0
       with:
         fetch-depth: 2 
+
     - name: Build assets
       run: npm install && npm run build
 
     - name: Install PHP and Composer
       uses: shivammathur/setup-php@v2
       with:
-          php-version: '8.2' # Adjust to match the PHP version used by your Laravel project
-          tools: 'composer'
+        php-version: '8.2'
+        tools: 'composer'
 
     - name: Install PHP dependencies
       run: composer install --no-dev --optimize-autoloader
-        
+      
+    - name: Optimize Laravel Application
+      run: |
+        php artisan config:cache
+        php artisan route:cache
+        php artisan view:cache
+
     - name: FTP-Deploy-Action
       uses: abdulkco/FTP-Deploy-Action@4.3.3
       with:
