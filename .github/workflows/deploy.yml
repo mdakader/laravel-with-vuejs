@@ -43,7 +43,7 @@ jobs:
     - name: Generate deployment package
       run: |
         mkdir -p deployment
-        cp -r app bootstrap config database lang public resources routes storage vendor composer.json composer.lock artisan deployment/
+        cp -r app bootstrap config database public resources routes storage vendor composer.json composer.lock artisan deployment/
         cd deployment && tar -czf ../deployment.tar.gz .
         
     - name: Push to cPanel
@@ -52,8 +52,8 @@ jobs:
         target-server: ${{ secrets.SSH_HOST }}
         remote-user: ${{ secrets.SSH_USERNAME }}
         private-ssh-key: ${{ secrets.SSH_KEY }}
-        destination-path: ./home/abdulkco/public_html/laravel/laravel-vuejs-api
-        source-path: deployment.tar.gz
+        destination-path: /home/abdulkco/public_html/laravel/laravel-vuejs-api/
+        source-path: ./deployment.tar.gz
         
     - name: Execute deployment commands
       uses: appleboy/ssh-action@master
@@ -62,7 +62,7 @@ jobs:
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.SSH_KEY }}
         script: |
-          cd public_html
+          cd /home/abdulkco/public_html/laravel/laravel-vuejs-api
           tar -xzf deployment.tar.gz
           rm deployment.tar.gz
           php artisan optimize:clear
